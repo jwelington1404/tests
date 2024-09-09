@@ -1,18 +1,15 @@
 import factory
-from myapp.models import Product
+from faker import Faker
+from myapp.models import Product  # Adjust the import to match your app structure
 
-class ProductFactory(factory.alchemy.SQLAlchemyModelFactory):
+fake = Faker()
+
+class ProductFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Product
-        sqlalchemy_session = db_session  # Use a sessão do banco de dados para testes
 
-    id = factory.Sequence(lambda n: n)
-    name = factory.Faker('word')
-    category = factory.Faker('word')
-    available = factory.Faker('boolean')
-    price = factory.Faker('pydecimal', left_digits=5, right_digits=2, positive=True)
-
-def test_product_factory(db_session):
-    product = ProductFactory()
-    assert product is not None
-    assert isinstance(product.name, str)
+    name = factory.LazyAttribute(lambda _: fake.word())
+    description = factory.LazyAttribute(lambda _: fake.sentence())
+    price = factory.LazyAttribute(lambda _: round(fake.pyfloat(left_digits=2, right_digits=2, positive=True), 2))
+    stock = factory.LazyAttribute(lambda _: fake.random_int(min=0, max=1000))
+    sku = factory.LazyAttribute(lambda _: fake.unique.ean(length=13))
